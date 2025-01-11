@@ -59,14 +59,25 @@ jobs:
       # 设置 iOS 构建环境
       - name: Setup iOS build environment
         run: |
-          echo "SDKROOT=$(xcrun -sdk iphoneos --show-sdk-path)" >> $GITHUB_ENV
+          SDKROOT=$(xcrun -sdk iphoneos --show-sdk-path)
+          echo "SDKROOT=$SDKROOT" >> $GITHUB_ENV
           echo "IPHONEOS_DEPLOYMENT_TARGET=15.0" >> $GITHUB_ENV
+          echo "MACOSX_DEPLOYMENT_TARGET=11.0" >> $GITHUB_ENV
+          
+          # 设置编译器和链接器标志
+          echo "CFLAGS=-target arm64-apple-ios15.0 -isysroot $SDKROOT -mios-version-min=15.0" >> $GITHUB_ENV
+          echo "CXXFLAGS=-target arm64-apple-ios15.0 -isysroot $SDKROOT -mios-version-min=15.0" >> $GITHUB_ENV
+          echo "LDFLAGS=-target arm64-apple-ios15.0 -isysroot $SDKROOT -mios-version-min=15.0" >> $GITHUB_ENV
 
       - name: Build libptrscan
         run: |
           cd libptrscan
-          CFLAGS="-target arm64-apple-ios15.0" \
-          CXXFLAGS="-target arm64-apple-ios15.0" \
+          
+          # 使用环境变量构建
+          CFLAGS="$CFLAGS" \
+          CXXFLAGS="$CXXFLAGS" \
+          LDFLAGS="$LDFLAGS" \
+          RUSTFLAGS="-C link-arg=-mios-version-min=15.0" \
           cargo build --release --target aarch64-apple-ios
           cd ..
 
