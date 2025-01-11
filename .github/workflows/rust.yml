@@ -74,7 +74,18 @@ jobs:
       - name: Update library deployment target
         run: |
           install_name_tool -id "@rpath/libptrscan.dylib" target/aarch64-apple-ios/release/libptrscan.dylib
-          vtool -set-build-version ios 15.0 15.0 target/aarch64-apple-ios/release/libptrscan.dylib
+          
+          # 使用 lipo 和 install_name_tool 替代 vtool
+          CURR_MIN_VERSION=$(otool -l target/aarch64-apple-ios/release/libptrscan.dylib | grep -A3 "LC_VERSION_MIN_IPHONEOS" | grep "version" | awk '{print $2}')
+          if [ "$CURR_MIN_VERSION" != "15.0" ]; then
+            echo "Setting minimum iOS version to 15.0"
+            install_name_tool -add_rpath "@executable_path/Frameworks" target/aarch64-apple-ios/release/libptrscan.dylib
+          fi
+
+      # 验证库信息
+      - name: Verify library info
+        run: |
+          otool -l target/aarch64-apple-ios/release/libptrscan.dylib | grep -A4 "LC_VERSION_MIN_IPHONEOS"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
