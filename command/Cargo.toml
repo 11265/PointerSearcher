@@ -7,14 +7,10 @@ edition = "2021"
 name = "ptrscan"
 path = "src/main.rs"
 
-[dependencies.argh]
-git = "https://github.com/google/argh"
-default-features = false
-features = ["help"]
-
-[dependencies.rayon]
-version = "1.10.0"
-default-features = false
-
 [dependencies]
 libptrscan = { path = "../libptrscan" }
+argh = { git = "https://github.com/google/argh", default-features = false, features = ["help"] }
+rayon = { version = "1.10.0", default-features = false }
+
+[build-dependencies]
+cc = "1.0"
