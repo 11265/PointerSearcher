@@ -13,23 +13,15 @@ fn main() {
         .parent()
         .unwrap();
     
-    // 设置库的搜索路径 - 添加多个可能的路径
-    println!("cargo:rustc-link-search=native={}", workspace_root.display());
-    println!("cargo:rustc-link-search=native={}/target/debug", workspace_root.display());
-    println!("cargo:rustc-link-search=native={}/target/release", workspace_root.display());
+    // 设置库的搜索路径
+    println!("cargo:rustc-link-search=native={}/target/{}/debug", workspace_root.display(), target);
+    println!("cargo:rustc-link-search=native={}/target/{}/release", workspace_root.display(), target);
     
-    if let Ok(target_dir) = env::var("CARGO_TARGET_DIR") {
-        println!("cargo:rustc-link-search=native={}", target_dir);
-    }
+    // 使用静态链接
+    println!("cargo:rustc-link-lib=static=ptrscan");
     
-    // 根据平台配置链接选项
-    if target.contains("windows") {
-        println!("cargo:rustc-link-lib=dylib=ptrscan");
-    } else if target.contains("apple") {
-        println!("cargo:rustc-link-lib=dylib=ptrscan");
-    } else {
-        // Linux 平台
-        println!("cargo:rustc-link-lib=dylib=ptrscan");
+    // Linux 平台特殊处理
+    if !target.contains("windows") && !target.contains("apple") {
         println!("cargo:rustc-link-arg=-Wl,--allow-multiple-definition");
     }
     
