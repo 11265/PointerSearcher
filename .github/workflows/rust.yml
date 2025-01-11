@@ -9,6 +9,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  IPHONEOS_DEPLOYMENT_TARGET: "15.0"  # 设置 iOS 最低版本为 15.0
 
 jobs:
   # Test job runs on Ubuntu
@@ -25,7 +26,7 @@ jobs:
         
       # 只检查代码格式和语法
       - name: Check formatting
-        run: cargo fmt --all -- --check || true  # 暂时允许格式检查失败
+        run: cargo fmt --all -- --check || true
         
       - name: Check code
         run: cargo check --workspace
@@ -55,16 +56,30 @@ jobs:
         run: |
           mkdir -p target/aarch64-apple-ios/release/
 
+      # 设置 iOS 构建环境
+      - name: Setup iOS build environment
+        run: |
+          echo "SDKROOT=$(xcrun -sdk iphoneos --show-sdk-path)" >> $GITHUB_ENV
+          echo "IPHONEOS_DEPLOYMENT_TARGET=15.0" >> $GITHUB_ENV
+
       - name: Build libptrscan
         run: |
           cd libptrscan
+          CFLAGS="-target arm64-apple-ios15.0" \
+          CXXFLAGS="-target arm64-apple-ios15.0" \
           cargo build --release --target aarch64-apple-ios
           cd ..
+
+      # 修改库的最低部署版本
+      - name: Update library deployment target
+        run: |
+          install_name_tool -id "@rpath/libptrscan.dylib" target/aarch64-apple-ios/release/libptrscan.dylib
+          vtool -set-build-version ios 15.0 15.0 target/aarch64-apple-ios/release/libptrscan.dylib
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ptrscan-ios-arm64-libs
+          name: ptrscan-ios15-arm64-libs
           path: |
             target/aarch64-apple-ios/release/libptrscan.a
             target/aarch64-apple-ios/release/libptrscan.dylib
