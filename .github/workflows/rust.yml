@@ -73,19 +73,21 @@ jobs:
       # 修改库的最低部署版本
       - name: Update library deployment target
         run: |
+          # 设置动态库的 ID
           install_name_tool -id "@rpath/libptrscan.dylib" target/aarch64-apple-ios/release/libptrscan.dylib
-          
-          # 使用 lipo 和 install_name_tool 替代 vtool
-          CURR_MIN_VERSION=$(otool -l target/aarch64-apple-ios/release/libptrscan.dylib | grep -A3 "LC_VERSION_MIN_IPHONEOS" | grep "version" | awk '{print $2}')
-          if [ "$CURR_MIN_VERSION" != "15.0" ]; then
-            echo "Setting minimum iOS version to 15.0"
-            install_name_tool -add_rpath "@executable_path/Frameworks" target/aarch64-apple-ios/release/libptrscan.dylib
-          fi
+          install_name_tool -add_rpath "@executable_path/Frameworks" target/aarch64-apple-ios/release/libptrscan.dylib
 
       # 验证库信息
       - name: Verify library info
         run: |
-          otool -l target/aarch64-apple-ios/release/libptrscan.dylib | grep -A4 "LC_VERSION_MIN_IPHONEOS"
+          # 显示完整的库信息
+          otool -l target/aarch64-apple-ios/release/libptrscan.dylib
+          
+          # 显示架构信息
+          lipo -info target/aarch64-apple-ios/release/libptrscan.dylib
+          
+          # 显示动态库依赖
+          otool -L target/aarch64-apple-ios/release/libptrscan.dylib
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
