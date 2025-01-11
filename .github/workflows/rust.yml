@@ -33,9 +33,9 @@ jobs:
       - name: Run clippy
         run: cargo clippy --workspace -- -D warnings
 
-  # Build job for iOS
+  # Build job for iOS libraries
   build:
-    name: Build iOS
+    name: Build iOS Libraries
     runs-on: macos-latest
     needs: test
     
@@ -61,31 +61,13 @@ jobs:
           cargo build --release --target aarch64-apple-ios
           cd ..
 
-      - name: Build command
-        run: |
-          cd command
-          cargo build --release --target aarch64-apple-ios
-          cd ..
-          
-      - name: Sign iOS binary
-        run: |
-          codesign --force --sign - --entitlements ent.plist target/aarch64-apple-ios/release/ptrscan
-          
-      - name: Create IPA
-        run: |
-          mkdir -p Payload/ptrscan.app
-          cp target/aarch64-apple-ios/release/ptrscan Payload/ptrscan.app/
-          cp ent.plist Payload/ptrscan.app/
-          zip -r ptrscan.ipa Payload
-          rm -rf Payload
-
-      - name: Upload artifact
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ptrscan-ios-arm64
+          name: ptrscan-ios-arm64-libs
           path: |
-            ptrscan.ipa
-            target/aarch64-apple-ios/release/ptrscan
+            target/aarch64-apple-ios/release/libptrscan.a
+            target/aarch64-apple-ios/release/libptrscan.dylib
 
   # Release job creates GitHub releases with built artifacts
   release:
@@ -102,6 +84,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            ptrscan-ios-arm64
+            libptrscan.a
+            libptrscan.dylib
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
