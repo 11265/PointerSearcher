@@ -64,6 +64,19 @@ jobs:
           cd libptrscan
           cargo build --release --target ${{ matrix.target }}
           cd ..
+          
+      # 复制库文件到预期位置
+      - name: Copy library files
+        shell: bash
+        run: |
+          mkdir -p target/${{ matrix.target }}/release/
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            cp target/${{ matrix.target }}/release/ptrscan.dll target/${{ matrix.target }}/release/
+          elif [ "${{ matrix.os }}" = "macos-latest" ]; then
+            cp target/${{ matrix.target }}/release/libptrscan.dylib target/${{ matrix.target }}/release/
+          else
+            cp target/${{ matrix.target }}/release/libptrscan.so target/${{ matrix.target }}/release/
+          fi
 
       - name: Build command
         run: |
