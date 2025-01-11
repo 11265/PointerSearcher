@@ -20,8 +20,12 @@ fn main() {
     // 使用静态链接
     println!("cargo:rustc-link-lib=static=ptrscan");
     
-    // Linux 平台特殊处理
-    if !target.contains("windows") && !target.contains("apple") {
+    // iOS 平台特殊处理
+    if target.contains("ios") {
+        println!("cargo:rustc-link-lib=framework=Foundation");
+        println!("cargo:rustc-link-lib=framework=Security");
+        println!("cargo:rustc-link-lib=framework=UIKit");
+    } else if !target.contains("windows") {
         println!("cargo:rustc-link-arg=-Wl,--allow-multiple-definition");
     }
     
