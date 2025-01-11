@@ -480,7 +480,7 @@ impl<'a> ModuleIter<'a> {
     }
 }
 
-impl<'a> Iterator for ModuleIter<'a> {
+impl Iterator for ModuleIter<'_> {
     type Item = Module;
 
     #[inline]
