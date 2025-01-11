@@ -73,12 +73,24 @@ jobs:
         run: |
           cd libptrscan
           
-          # 使用环境变量构建
-          CFLAGS="$CFLAGS" \
-          CXXFLAGS="$CXXFLAGS" \
-          LDFLAGS="$LDFLAGS" \
-          RUSTFLAGS="-C link-arg=-mios-version-min=15.0" \
+          # 设置环境变量
+          export IPHONEOS_DEPLOYMENT_TARGET=15.0
+          export MACOSX_DEPLOYMENT_TARGET=11.0
+          export SDKROOT=$(xcrun --sdk iphoneos --show-sdk-path)
+          
+          # 设置编译器标志
+          export CFLAGS="-target arm64-apple-ios15.0 -isysroot $SDKROOT -mios-version-min=15.0"
+          export CXXFLAGS="-target arm64-apple-ios15.0 -isysroot $SDKROOT -mios-version-min=15.0"
+          export RUSTFLAGS="-C link-arg=-mios-version-min=15.0 -C target-cpu=apple-a12"
+          
+          # 构建静态库
           cargo build --release --target aarch64-apple-ios
+          
+          # 验证静态库
+          if [ -f "target/aarch64-apple-ios/release/libptrscan.a" ]; then
+            otool -l target/aarch64-apple-ios/release/libptrscan.a | grep -A2 "LC_VERSION_MIN_IPHONEOS"
+            echo "Static library built successfully"
+          fi
           cd ..
 
       # 修改库的最低部署版本
