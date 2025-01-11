@@ -15,3 +15,6 @@ features = ["help"]
 [dependencies.rayon]
 version = "1.10.0"
 default-features = false
+
+[dependencies]
+libptrscan = { path = "../libptrscan" }
